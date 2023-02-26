@@ -1,0 +1,10 @@
+image: archlinux
+tasks:
+  - update-pacman: |
+      sudo pacman -Sy
+  - install-pkgs: |
+      sudo pacman --noconfirm -S deno
+  - test: |
+      cd /home/build/easysecurity && deno test --allow-all
+  - lint: |
+      cd /home/build/easysecurity && deno lint
