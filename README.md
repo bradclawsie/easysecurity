@@ -9,6 +9,6 @@ Basic security API for Typescript that optimizes for easy use
 ## import
 
 ```ts
-import * from "https://deno.land/x/easysecurity/mod.ts";
+import * as easysecurity from "https://deno.land/x/easysecurity/mod.ts";
     
 ```
