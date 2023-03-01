@@ -11,7 +11,9 @@ Deno.test("sha256Hex", async () => {
 });
 
 Deno.test("key", async () => {
-  const k0 = new Key(await Key.makeCryptoKey());
-  const k1 = new Key(await Key.makeCryptoKey());
-  assertEquals(k0, k1);
+  const k0 = new Key(await Key.create());
+  const h0 = await k0.toHex();
+  const k1 = new Key(await Key.fromHex(h0));
+  const h1 = await k1.toHex();
+  assertEquals(h0, h1);
 });
