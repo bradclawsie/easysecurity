@@ -1,6 +1,9 @@
 import { crypto } from "https://deno.land/std@0.178.0/crypto/crypto.ts";
 import { toHashString } from "https://deno.land/std@0.178.0/crypto/to_hash_string.ts";
-import { assertEquals } from "https://deno.land/std@0.178.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertNotEquals,
+} from "https://deno.land/std@0.178.0/testing/asserts.ts";
 import {
   bytesToHex,
   hexToBytes,
@@ -26,12 +29,12 @@ class Key {
   static readonly Extractable = true;
   static readonly Usages: KeyUsage[] = ["encrypt", "decrypt"];
 
-  cryptoKey: CryptoKey;
+  readonly cryptoKey: CryptoKey;
 
   constructor(cryptoKey: CryptoKey) {
-    assertEquals(cryptoKey.algorithm, Key.Params);
-    assertEquals(cryptoKey.extractable, Key.Extractable);
-    assertEquals(cryptoKey.usages, Key.Usages);
+    assertEquals(cryptoKey.algorithm, Key.Params, "key algorithm");
+    assertEquals(cryptoKey.extractable, Key.Extractable, "key extractable");
+    assertEquals(cryptoKey.usages, Key.Usages, "key usages");
     this.cryptoKey = cryptoKey;
   }
 
@@ -61,4 +64,13 @@ class Key {
   }
 }
 
-export { Key, randomUUID, sha256Hex };
+/**
+ * @param {string} s - the seed for the IV
+ * @returns {Promise<Uint8Array>} a 16-byte long Uint8Array suitable as an AEC-CBC IV
+ */
+const stringToIV = async (s: string): Promise<Uint8Array> => {
+  assertNotEquals(s.length, 0, "empty iv input");
+  return stringToBytes(await sha256Hex(s)).slice(0, 16);
+};
+
+export { Key, randomUUID, sha256Hex, stringToIV };
