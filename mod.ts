@@ -29,6 +29,7 @@ class Key {
   static readonly Extractable = true;
   static readonly Usages: KeyUsage[] = ["encrypt", "decrypt"];
 
+  // access internal representation directly if needed
   readonly cryptoKey: CryptoKey;
 
   constructor(cryptoKey: CryptoKey) {
@@ -38,39 +39,66 @@ class Key {
     this.cryptoKey = cryptoKey;
   }
 
+  static async create(): Promise<Key> {
+    return new Key(
+      await crypto.subtle.generateKey(
+        Key.Params,
+        Key.Extractable,
+        Key.Usages,
+      ),
+    );
+  }
+
+  static async fromHex(hexKey: string): Promise<Key> {
+    return new Key(
+      await crypto.subtle.importKey(
+        "raw",
+        hexToBytes(hexKey),
+        Key.Params,
+        Key.Extractable,
+        Key.Usages,
+      ),
+    );
+  }
+
   async toHex(): Promise<string> {
     const keyBytes = new Uint8Array(
       await crypto.subtle.exportKey("raw", this.cryptoKey),
     );
     return bytesToHex(keyBytes);
   }
+}
 
-  static async fromHex(hexKey: string): Promise<CryptoKey> {
-    return await crypto.subtle.importKey(
-      "raw",
-      hexToBytes(hexKey),
-      Key.Params,
-      Key.Extractable,
-      Key.Usages,
-    );
+class IV {
+  static readonly Length = 16;
+  readonly bytes: Uint8Array;
+
+  constructor(bytes: Uint8Array) {
+    assertEquals(bytes.length, IV.Length, "iv length");
+    this.bytes = bytes;
   }
 
-  static async create(): Promise<CryptoKey> {
-    return await crypto.subtle.generateKey(
-      Key.Params,
-      Key.Extractable,
-      Key.Usages,
-    );
+  fromHex(hexIV: string): IV {
+    return new IV(hexToBytes(hexIV));
+  }
+
+  toHex(): string {
+    return bytesToHex(this.bytes);
+  }
+
+  /**
+   * @param {string} s - the seed for the IV
+   * @returns {Promise<IV>} a 16-byte long Uint8Array suitable as an AEC-CBC IV
+   */
+  static async fromString(s: string): Promise<IV> {
+    assertNotEquals(s.length, 0, "empty iv input");
+    return new IV(stringToBytes(await sha256Hex(s)).slice(0, IV.Length));
   }
 }
 
-/**
- * @param {string} s - the seed for the IV
- * @returns {Promise<Uint8Array>} a 16-byte long Uint8Array suitable as an AEC-CBC IV
- */
-const stringToIV = async (s: string): Promise<Uint8Array> => {
-  assertNotEquals(s.length, 0, "empty iv input");
-  return stringToBytes(await sha256Hex(s)).slice(0, 16);
-};
+//class Encrypter {
+//  readonly key: Key;
+//  readonly iv: Uint8Array;
+//}
 
-export { Key, randomUUID, sha256Hex, stringToIV };
+export { IV, Key, randomUUID, sha256Hex };
