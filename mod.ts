@@ -24,13 +24,14 @@ const sha256Hex = async (s: string): Promise<string> =>
  */
 const randomUUID = (): string => crypto.randomUUID();
 
+const AES_CBC = "AES-CBC";
+
 class Key {
-  static readonly Params: AesKeyGenParams = { name: "AES-CBC", length: 128 };
+  static readonly Params: AesKeyGenParams = { name: AES_CBC, length: 128 };
   static readonly Extractable = true;
   static readonly Usages: KeyUsage[] = ["encrypt", "decrypt"];
 
-  // access internal representation directly if needed
-  readonly cryptoKey: CryptoKey;
+  readonly cryptoKey: CryptoKey; // internal representation
 
   constructor(cryptoKey: CryptoKey) {
     assertEquals(cryptoKey.algorithm, Key.Params, "key algorithm");
@@ -71,14 +72,14 @@ class Key {
 
 class IV {
   static readonly Length = 16;
-  readonly bytes: Uint8Array;
+  readonly bytes: Uint8Array; // internal representation
 
   constructor(bytes: Uint8Array) {
     assertEquals(bytes.length, IV.Length, "iv length");
     this.bytes = bytes;
   }
 
-  fromHex(hexIV: string): IV {
+  static fromHex(hexIV: string): IV {
     return new IV(hexToBytes(hexIV));
   }
 
@@ -96,9 +97,30 @@ class IV {
   }
 }
 
-//class Encrypter {
-//  readonly key: Key;
-//  readonly iv: Uint8Array;
-//}
+class Encrypter {
+  readonly key: Key;
+  readonly iv: IV;
 
-export { IV, Key, randomUUID, sha256Hex };
+  constructor(key: Key, iv: IV) {
+    this.key = key;
+    this.iv = iv;
+  }
+
+  static async fromHex(hexKey: string, hexIV: string): Promise<Encrypter> {
+    return new Encrypter(await Key.fromHex(hexKey), IV.fromHex(hexIV));
+  }
+
+  async encryptToHex(s: string): Promise<string> {
+    return bytesToHex(
+      new Uint8Array(
+        await crypto.subtle.encrypt(
+          { name: AES_CBC, iv: this.iv.bytes },
+          this.key.cryptoKey,
+          new TextEncoder().encode(s),
+        ),
+      ),
+    );
+  }
+}
+
+export { Encrypter, IV, Key, randomUUID, sha256Hex };
