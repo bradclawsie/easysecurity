@@ -1,11 +1,12 @@
-import { crypto } from "https://deno.land/std@0.178.0/crypto/crypto.ts";
-import { toHashString } from "https://deno.land/std@0.178.0/crypto/to_hash_string.ts";
+import { crypto } from "https://deno.land/std@0.179.0/crypto/crypto.ts";
+import { toHashString } from "https://deno.land/std@0.179.0/crypto/to_hash_string.ts";
 import {
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.178.0/testing/asserts.ts";
+} from "https://deno.land/std@0.179.0/testing/asserts.ts";
 import {
   bytesToHex,
+  bytesToString,
   hexToBytes,
   stringToBytes,
 } from "https://deno.land/x/textras@0.1.3/mod.ts";
@@ -40,9 +41,11 @@ class Key {
     this.cryptoKey = cryptoKey;
   }
 
-  static async create(): Promise<Key> {
+  static async fromHex(hexKey: string): Promise<Key> {
     return new Key(
-      await crypto.subtle.generateKey(
+      await crypto.subtle.importKey(
+        "raw",
+        hexToBytes(hexKey),
         Key.Params,
         Key.Extractable,
         Key.Usages,
@@ -50,11 +53,9 @@ class Key {
     );
   }
 
-  static async fromHex(hexKey: string): Promise<Key> {
+  static async generate(): Promise<Key> {
     return new Key(
-      await crypto.subtle.importKey(
-        "raw",
-        hexToBytes(hexKey),
+      await crypto.subtle.generateKey(
         Key.Params,
         Key.Extractable,
         Key.Usages,
@@ -83,6 +84,10 @@ class IV {
     return new IV(hexToBytes(hexIV));
   }
 
+  static generate(): IV {
+    return new IV(crypto.getRandomValues(new Uint8Array(IV.Length)));
+  }
+
   toHex(): string {
     return bytesToHex(this.bytes);
   }
@@ -97,7 +102,7 @@ class IV {
   }
 }
 
-class Encrypter {
+class Crypter {
   readonly key: Key;
   readonly iv: IV;
 
@@ -106,21 +111,33 @@ class Encrypter {
     this.iv = iv;
   }
 
-  static async fromHex(hexKey: string, hexIV: string): Promise<Encrypter> {
-    return new Encrypter(await Key.fromHex(hexKey), IV.fromHex(hexIV));
+  static async fromHex(hexKey: string, hexIV: string): Promise<Crypter> {
+    return new Crypter(await Key.fromHex(hexKey), IV.fromHex(hexIV));
   }
 
-  async encryptToHex(s: string): Promise<string> {
+  async decryptFromHex(hexEncrypted: string): Promise<string> {
+    return bytesToString(
+      new Uint8Array(
+        await crypto.subtle.decrypt(
+          { name: AES_CBC, iv: this.iv.bytes },
+          this.key.cryptoKey,
+          hexToBytes(hexEncrypted),
+        ),
+      ),
+    );
+  }
+
+  async encryptToHex(clearText: string): Promise<string> {
     return bytesToHex(
       new Uint8Array(
         await crypto.subtle.encrypt(
           { name: AES_CBC, iv: this.iv.bytes },
           this.key.cryptoKey,
-          new TextEncoder().encode(s),
+          stringToBytes(clearText),
         ),
       ),
     );
   }
 }
 
-export { Encrypter, IV, Key, randomUUID, sha256Hex };
+export { Crypter, IV, Key, randomUUID, sha256Hex };
