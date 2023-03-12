@@ -9,7 +9,7 @@ import {
   bytesToString,
   hexToBytes,
   stringToBytes,
-} from "https://deno.land/x/textras@0.1.3/mod.ts";
+} from "https://deno.land/x/textras@0.1.4/mod.ts";
 
 /**
  * produce the hex-encoded string of the sha256 hash of string s
