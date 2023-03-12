@@ -28,7 +28,7 @@ Deno.test("key", async () => {
 });
 
 /**
- *  iv length
+ *  round trip an IV
  */
 Deno.test("iv", async () => {
   const iv = await IV.fromString("hello world");
@@ -43,11 +43,9 @@ Deno.test("iv", async () => {
  * encrypt/decrypt
  */
 Deno.test("encrypt", async () => {
-  const key = await Key.generate();
-  const iv = IV.generate();
-  const encrypter = new Crypter(key, iv);
+  const crypter = await Crypter.generate();
   const clearText = "hello world";
-  const hexCrypted = await encrypter.encryptToHex(clearText);
-  const decrypted = await encrypter.decryptFromHex(hexCrypted);
+  const hexCrypted = await crypter.encryptToHex(clearText);
+  const decrypted = await crypter.decryptFromHex(hexCrypted);
   assertEquals(decrypted, clearText, "round trip encrypt decrypt");
 });

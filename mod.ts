@@ -171,6 +171,14 @@ class Crypter {
   }
 
   /**
+   * construct a new Crypter using newly generated Key and IV
+   * @returns {Promise<Crypter>} - a new Crypter constructed with generated Key and IV
+   */
+  static async generate(): Promise<Crypter> {
+    return new Crypter(await Key.generate(), IV.generate());
+  }
+
+  /**
    * decrypt a hex-encoded encryption output and return the original clear text
    * @param {string} hexEncrypted - the output of a previous call to encryptToHex
    * @returns {Promise<string>} - the decrypted clear text
