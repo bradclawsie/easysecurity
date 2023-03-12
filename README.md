@@ -20,6 +20,8 @@ people who want to tune parameters. This module is for people for whom
 AES-CBC is a "good enough" cipher, for whom v4 UUIDs are a "good
 enough" random value, and for whom sha256 is a "good enough" hash.
 
+Check out `test.ts` for some good copy-paste code samples.
+
 ## Import
 
 ```ts
