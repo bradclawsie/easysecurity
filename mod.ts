@@ -1,15 +1,15 @@
-import { crypto } from "https://deno.land/std@0.179.0/crypto/crypto.ts";
-import { toHashString } from "https://deno.land/std@0.179.0/crypto/to_hash_string.ts";
+import { crypto } from "https://deno.land/std@0.180.0/crypto/crypto.ts";
+import { toHashString } from "https://deno.land/std@0.180.0/crypto/to_hash_string.ts";
 import {
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.179.0/testing/asserts.ts";
+} from "https://deno.land/std@0.180.0/testing/asserts.ts";
 import {
   bytesToHex,
   bytesToString,
   hexToBytes,
   stringToBytes,
-} from "https://deno.land/x/textras@0.1.4/mod.ts";
+} from "https://deno.land/x/textras@0.1.5/mod.ts";
 
 /**
  * produce the hex-encoded string of the sha256 hash of string s
