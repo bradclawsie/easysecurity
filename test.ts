@@ -1,5 +1,16 @@
-import { assertEquals } from "https://deno.land/std@0.182.0/testing/asserts.ts";
-import { Crypter, IV, Key, sha256Hex } from "./mod.ts";
+import {
+  assert,
+  assertEquals,
+} from "https://deno.land/std@0.182.0/testing/asserts.ts";
+import { Crypter, isUUID, IV, Key, randomUUID, sha256Hex } from "./mod.ts";
+
+/**
+ * uuid round trip
+ */
+Deno.test("uuid", () => {
+  assert(isUUID(randomUUID()), "uuid round trip");
+  assert(!isUUID(randomUUID() + randomUUID()), "not a uuid");
+});
 
 /**
  * hex encode to a known value
