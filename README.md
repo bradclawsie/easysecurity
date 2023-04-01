@@ -7,18 +7,16 @@ Basic security API for Typescript that optimizes for easy use
 
 ## Motivation
 
-I find most security APIs hard to use. What I'm usually looking for is
-simple ways to hash values, encrypt/decrypt values, and generate
-random strings.
+I find most security APIs hard to use. What I'm usually looking for is simple
+ways to hash values, encrypt/decrypt values, and generate random strings.
 
-In almost all cases, I want to work with values that
-can be printed and stored directly, which for me means using hex
-encoding as a serialization format.
+In almost all cases, I want to work with values that can be printed and stored
+directly, which for me means using hex encoding as a serialization format.
 
-This module is not for cryptography experts. This module is not for
-people who want to tune parameters. This module is for people for whom
-AES-CBC is a "good enough" cipher, for whom v4 UUIDs are a "good
-enough" random value, and for whom sha256 is a "good enough" hash.
+This module is not for cryptography experts. This module is not for people who
+want to tune parameters. This module is for people for whom AES-CBC is a "good
+enough" cipher, for whom v4 UUIDs are a "good enough" random value, and for whom
+sha256 is a "good enough" hash.
 
 Check out `test.ts` for some good copy-paste code samples.
 
@@ -43,7 +41,6 @@ randomUUID(); // re-export crypto.randomUUID();
 ### Encryption/Decryption
 
 ```ts
-
 // generate a Crypter using new, random key and IV
 // (you can access them via crypter.Key, crypter.IV)
 const crypter = Crypter.generate();
@@ -57,7 +54,7 @@ const iv = IV.fromString("user@example.com");
 const crypter = await new Crypter(key, iv);
 
 // or you want to create Key and IV instances directly from
-hex-exports
+hex - exports;
 const key = await Key.fromHex(hexKey);
 const iv = IV.fromHex(hexIV);
 
@@ -71,5 +68,4 @@ const hexCrypted = await crypter.encryptToHex(clearText);
 
 // ...and get the clear text back
 const decrypted = await crypter.decryptFromHex(hexCrypted);
-
 ```

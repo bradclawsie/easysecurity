@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.179.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.182.0/testing/asserts.ts";
 import { Crypter, IV, Key, sha256Hex } from "./mod.ts";
 
 /**

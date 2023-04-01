@@ -1,9 +1,9 @@
-import { crypto } from "https://deno.land/std@0.180.0/crypto/crypto.ts";
-import { toHashString } from "https://deno.land/std@0.180.0/crypto/to_hash_string.ts";
+import { crypto } from "https://deno.land/std@0.182.0/crypto/crypto.ts";
+import { toHashString } from "https://deno.land/std@0.182.0/crypto/to_hash_string.ts";
 import {
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.180.0/testing/asserts.ts";
+} from "https://deno.land/std@0.182.0/testing/asserts.ts";
 import {
   bytesToHex,
   bytesToString,
@@ -18,6 +18,18 @@ import {
  */
 const sha256Hex = async (s: string): Promise<string> =>
   toHashString(await crypto.subtle.digest("SHA-256", stringToBytes(s)));
+
+/**
+ * test a string to see if it is a uuid
+ * @param {string} s - the string to test
+ * @returns {boolean} if s is a uuid
+ */
+const isUUID = (s: string) => {
+  const re = new RegExp(
+    "/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i",
+  );
+  return re.test(s);
+};
 
 /**
  * re-export crypto.randomUUID in this namespace
@@ -213,4 +225,4 @@ class Crypter {
   }
 }
 
-export { Crypter, IV, Key, randomUUID, sha256Hex };
+export { Crypter, isUUID, IV, Key, randomUUID, sha256Hex };
