@@ -54,7 +54,7 @@ const iv = IV.fromString("user@example.com");
 const crypter = await new Crypter(key, iv);
 
 // or you want to create Key and IV instances directly from
-hex - exports;
+// hex - exports;
 const key = await Key.fromHex(hexKey);
 const iv = IV.fromHex(hexIV);
 
