@@ -5,6 +5,14 @@ Basic security API for Typescript that optimizes for easy use
 [![License:MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![ci](https://github.com/bradclawsie/easysecurity/workflows/ci/badge.svg)
 
+## Important Compatibility Note
+
+Note that there will be breaking changes introduced after version 0.1.9.
+These changes will start a 0.2.x version scheme. If you have a dependency
+on this library as it is presently developed, I recommend fixing your
+use at version 0.1.9 until you can undertake a migration forward. 
+Alternately, you may wish to simply fork version 0.1.9.
+
 ## Motivation
 
 I find most security APIs hard to use. What I'm usually looking for is simple

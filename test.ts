@@ -1,7 +1,7 @@
 import {
   assert,
   assertEquals,
-} from "https://deno.land/std@0.200.0/assert/mod.ts";
+} from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { Crypter, isUUID, IV, Key, randomUUID, sha256Hex } from "./mod.ts";
 
 /**
