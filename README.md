@@ -7,11 +7,17 @@ Basic security API for Typescript that optimizes for easy use
 
 ## Important Compatibility Note
 
-Note that there will be breaking changes introduced after version 0.1.9.
-These changes will start a 0.2.x version scheme. If you have a dependency
-on this library as it is presently developed, I recommend fixing your
-use at version 0.1.9 until you can undertake a migration forward. 
-Alternately, you may wish to simply fork version 0.1.9.
+The 0.2.0 release breaks compatibility with the previous relesae, 0.1.9. This
+was noted in the 0.1.9 README. The changes include:
+
+- Using AES-GCM 256 as the default cipher instead of AES-CBC 128.
+- Moving `encryptToHex` and `decryptToHex` to static methods that feature
+  per-encrypt IVs automatically generated and prepended to the encrypted
+  message.
+- Removing the `Crypter` class.
+
+No deprecation notices are included as the change of the cipher implies the need
+to regenerate encrypted messages generated with versions prior.
 
 ## Motivation
 
@@ -22,7 +28,7 @@ In almost all cases, I want to work with values that can be printed and stored
 directly, which for me means using hex encoding as a serialization format.
 
 This module is not for cryptography experts. This module is not for people who
-want to tune parameters. This module is for people for whom AES-CBC is a "good
+want to tune parameters. This module is for people for whom AES-GCM is a "good
 enough" cipher, for whom v4 UUIDs are a "good enough" random value, and for whom
 sha256 is a "good enough" hash.
 
@@ -49,31 +55,9 @@ randomUUID(); // re-export crypto.randomUUID();
 ### Encryption/Decryption
 
 ```ts
-// generate a Crypter using new, random key and IV
-// (you can access them via crypter.Key, crypter.IV)
-const crypter = Crypter.generate();
-
-// or maybe you already have hex-exported Key and IV that you had stored
-const crypter = Crypter.fromHex(hexKey, hexIV);
-
-// or maybe you want to generate new Key and IV
 const key = await Key.generate();
-const iv = IV.fromString("user@example.com");
-const crypter = await new Crypter(key, iv);
-
-// or you want to create Key and IV instances directly from
-// hex - exports;
-const key = await Key.fromHex(hexKey);
-const iv = IV.fromHex(hexIV);
-
-// and you can make these exports easily:
-const hexKey = key.toHex();
-const hexIV = iv.toHex();
-
-// to encrypt some clear text:
 const clearText = "hello world";
-const hexCrypted = await crypter.encryptToHex(clearText);
-
-// ...and get the clear text back
-const decrypted = await crypter.decryptFromHex(hexCrypted);
+const hexCryptedWithIV = await encryptToHex(clearText, key);
+const decrypted = await decryptFromHex(hexCryptedWithIV, key);
+// clearText == decrypted
 ```

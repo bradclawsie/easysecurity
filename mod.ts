@@ -35,13 +35,13 @@ const isUUID = (s: string): boolean => {
  */
 const randomUUID = (): string => crypto.randomUUID();
 
-const AES_CBC = "AES-CBC";
+const AES_GCM = "AES-GCM";
 
 /**
  * @class Key provides a simple wrapper for AES CryptoKeys allowing for serialization to hex.
  */
 class Key {
-  static readonly Params: AesKeyGenParams = { name: AES_CBC, length: 128 };
+  static readonly Params: AesKeyGenParams = { name: AES_GCM, length: 256 };
   static readonly Extractable = true;
   static readonly Usages: KeyUsage[] = ["encrypt", "decrypt"];
 
@@ -154,73 +154,40 @@ class IV {
 }
 
 /**
- * @class Crypter provides a simple wrapper for encrypting to and decrypting from hex-encoded values
+ * encrypt a clear text and hex-encode the resulting encrypted value
+ * @param {string} clearText - the string to encrypt
+ * @param {Key} key - Key instance
+ * @returns {Promise<string>} - the hex-encoding of the encrypted iv + clearText
  */
-class Crypter {
-  readonly key: Key;
-  readonly iv: IV;
-
-  /**
-   * @constructor
-   * @param {Key} key - the encryption Key
-   * @param {IV} iv - the encryption IV
-   */
-  constructor(key: Key, iv: IV) {
-    this.key = key;
-    this.iv = iv;
-  }
-
-  /**
-   * construct a new Crypter using a hex-encoded Key and IV
-   * @param {string} hexKey - the hex-encoded encryption Key (from Key.toHex())
-   * @param {string} hexIV - the hex-encoded encryption IV (from IV.toHex())
-   * @returns {Promise<Crypter>} - a new Crypter constructed from hexKey and hexIV
-   */
-  static async fromHex(hexKey: string, hexIV: string): Promise<Crypter> {
-    return new Crypter(await Key.fromHex(hexKey), IV.fromHex(hexIV));
-  }
-
-  /**
-   * construct a new Crypter using newly generated Key and IV
-   * @returns {Promise<Crypter>} - a new Crypter constructed with generated Key and IV
-   */
-  static async generate(): Promise<Crypter> {
-    return new Crypter(await Key.generate(), IV.generate());
-  }
-
-  /**
-   * decrypt a hex-encoded encryption output and return the original clear text
-   * @param {string} hexEncrypted - the output of a previous call to encryptToHex
-   * @returns {Promise<string>} - the decrypted clear text
-   */
-  async decryptFromHex(hexEncrypted: string): Promise<string> {
-    return bytesToString(
-      new Uint8Array(
-        await crypto.subtle.decrypt(
-          { name: AES_CBC, iv: this.iv.bytes },
-          this.key.cryptoKey,
-          hexToBytes(hexEncrypted),
-        ),
+async function encryptToHex(clearText: string, key: Key): Promise<string> {
+  const iv = IV.generate();
+  return iv.toHex() + bytesToHex(
+    new Uint8Array(
+      await crypto.subtle.encrypt(
+        { name: AES_GCM, iv: iv.bytes },
+        key.cryptoKey,
+        stringToBytes(clearText),
       ),
-    );
-  }
-
-  /**
-   * encrypt a clear text and hex-encode the resulting encrypted value
-   * @param {string} clearText - the string to encrypt
-   * @returns {Promise<string>} - the decrypted clear text
-   */
-  async encryptToHex(clearText: string): Promise<string> {
-    return bytesToHex(
-      new Uint8Array(
-        await crypto.subtle.encrypt(
-          { name: AES_CBC, iv: this.iv.bytes },
-          this.key.cryptoKey,
-          stringToBytes(clearText),
-        ),
-      ),
-    );
-  }
+    ),
+  );
 }
 
-export { Crypter, isUUID, IV, Key, randomUUID, sha256Hex };
+/**
+ * @param {string} encrypted - the output of encryptToHex
+ * @param {Key} key - Key instance
+ * @returns {Promise<string>} - the decrypted clear text
+ */
+async function decryptFromHex(encrypted: string, key: Key): Promise<string> {
+  const iv = IV.fromHex(encrypted.substring(0, 2 * IV.Length));
+  return bytesToString(
+    new Uint8Array(
+      await crypto.subtle.decrypt(
+        { name: AES_GCM, iv: iv.bytes },
+        key.cryptoKey,
+        hexToBytes(encrypted.substring(2 * IV.Length)),
+      ),
+    ),
+  );
+}
+
+export { decryptFromHex, encryptToHex, isUUID, IV, Key, randomUUID, sha256Hex };

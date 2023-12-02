@@ -1,8 +1,17 @@
 import {
   assert,
   assertEquals,
+  assertNotEquals,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { Crypter, isUUID, IV, Key, randomUUID, sha256Hex } from "./mod.ts";
+import {
+  decryptFromHex,
+  encryptToHex,
+  isUUID,
+  IV,
+  Key,
+  randomUUID,
+  sha256Hex,
+} from "./mod.ts";
 
 /**
  * uuid round trip
@@ -53,10 +62,14 @@ Deno.test("iv", async () => {
 /**
  * encrypt/decrypt
  */
-Deno.test("encrypt", async () => {
-  const crypter = await Crypter.generate();
+Deno.test("encrypt/decrypt", async () => {
+  const k = await Key.generate();
   const clearText = "hello world";
-  const hexCrypted = await crypter.encryptToHex(clearText);
-  const decrypted = await crypter.decryptFromHex(hexCrypted);
+  const hexCryptedWithIV = await encryptToHex(clearText, k);
+  const decrypted = await decryptFromHex(hexCryptedWithIV, k);
   assertEquals(decrypted, clearText, "round trip encrypt decrypt");
+  const hexCryptedWithIV2 = await encryptToHex(clearText, k);
+  assertNotEquals(hexCryptedWithIV, hexCryptedWithIV2, "different iv");
+  const decrypted2 = await decryptFromHex(hexCryptedWithIV, k);
+  assertEquals(decrypted2, clearText, "round trip encrypt decrypt");
 });
